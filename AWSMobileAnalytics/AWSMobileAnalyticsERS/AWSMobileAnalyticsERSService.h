@@ -14,7 +14,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <AWSCore/AWSCore.h>
+#import "AWSCore.h"
 #import "AWSMobileAnalyticsERSModel.h"
 #import "AWSMobileAnalyticsERSResources.h"
 

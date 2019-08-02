@@ -31,7 +31,7 @@ FOUNDATION_EXPORT double AWSMobileAnalyticsVersionNumber DEPRECATED_MSG_ATTRIBUT
  */
 FOUNDATION_EXPORT const unsigned char AWSMobileAnalyticsVersionString[] DEPRECATED_MSG_ATTRIBUTE("Use AWSPinpoint instead.");
 
-#import <AWSCore/AWSCore.h>
+#import "AWSCore.h"
 
 #import "AWSMobileAnalyticsService.h"
 #import "AWSMobileAnalyticsOptions.h"

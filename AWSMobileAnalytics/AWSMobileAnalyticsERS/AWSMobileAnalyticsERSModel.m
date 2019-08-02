@@ -14,7 +14,7 @@
 //
 
 #import "AWSMobileAnalyticsERSModel.h"
-#import <AWSCore/AWSCategory.h>
+#import "AWSCategory.h"
 
 NSString *const AWSMobileAnalyticsERSErrorDomain = @"com.amazonaws.AWSMobileAnalyticsERSErrorDomain";
 

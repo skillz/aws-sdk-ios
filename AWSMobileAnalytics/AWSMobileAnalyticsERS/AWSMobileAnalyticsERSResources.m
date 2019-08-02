@@ -14,7 +14,7 @@
 //
 
 #import "AWSMobileAnalyticsERSResources.h"
-#import <AWSCore/AWSCocoaLumberjack.h>
+#import "AWSCocoaLumberjack.h"
 
 @interface AWSMobileAnalyticsERSResources ()
 

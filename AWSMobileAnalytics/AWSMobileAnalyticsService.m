@@ -29,7 +29,7 @@
 #import "AWSMobileAnalyticsContext.h"
 #import "AWSMobileAnalyticsERSService.h"
 
-#import <AWSCore/AWSInfo.h>
+#import "AWSInfo.h"
 
 static NSString *const AWSInfoMobileAnalytics = @"MobileAnalytics";
 static NSString *const AWSInfoAppId = @"AppId";
