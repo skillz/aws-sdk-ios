@@ -14,7 +14,7 @@
 //
 
 #import "AWSPinpointTargetingModel.h"
-#import <AWSCore/AWSCategory.h>
+#import "AWSCategory.h"
 
 NSString *const AWSPinpointTargetingErrorDomain = @"com.amazonaws.AWSPinpointTargetingErrorDomain";
 

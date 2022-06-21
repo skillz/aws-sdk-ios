@@ -14,7 +14,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <AWSCore/AWSCore.h>
+#import "AWSCore.h"
 
 @class AWSPinpointContext, AWSPinpointConfiguration, AWSPinpointAnalytics, AWSPinpointTargeting, AWSPinpointTargetingClient, AWSPinpointAnalyticsClient, AWSPinpointSessionClient;
 

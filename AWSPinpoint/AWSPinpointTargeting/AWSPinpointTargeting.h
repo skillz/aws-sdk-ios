@@ -38,5 +38,5 @@ FOUNDATION_EXPORT double AWSPinpointTargetingVersionNumber DEPRECATED_MSG_ATTRIB
  */
 FOUNDATION_EXPORT const unsigned char AWSPinpointTargetingVersionString[] DEPRECATED_MSG_ATTRIBUTE("Use AWSPinpointTargetingSDKVersion instead.");
 
-#import <AWSCore/AWSCore.h>
+#import "AWSCore.h"
 #import "AWSPinpointTargetingService.h"

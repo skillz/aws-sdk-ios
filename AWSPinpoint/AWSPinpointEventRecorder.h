@@ -14,7 +14,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <AWSCore/AWSService.h>
+#import "AWSService.h"
 
 @class AWSPinpointEvent,AWSPinpointContext,AWSPinpointTargetingClient;
 

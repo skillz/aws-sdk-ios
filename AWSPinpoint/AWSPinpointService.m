@@ -13,7 +13,7 @@
 // permissions and limitations under the License.
 //
 
-#import <AWSCore/AWSInfo.h>
+#import "AWSInfo.h"
 
 #import "AWSPinpoint.h"
 #import "AWSPinpointContext.h"
@@ -24,7 +24,7 @@
 #import "AWSPinpointNotificationManager.h"
 #import "AWSPinpointAnalyticsClient.h"
 #import "AWSPinpointTargetingClient.h"
-#import <AWSCore/AWSSynchronizedMutableDictionary.h>
+#import "AWSSynchronizedMutableDictionary.h"
 
 #pragma mark - Categories -
 
