@@ -14,7 +14,7 @@
 //
 
 #import "AWSPinpointTargetingResources.h"
-#import <AWSCore/AWSCocoaLumberjack.h>
+#import "AWSCocoaLumberjack.h"
 
 @interface AWSPinpointTargetingResources ()
 

@@ -13,7 +13,7 @@
  permissions and limitations under the License.
  */
 
-#import <AWSCore/AWSCocoaLumberjack.h>
+#import "AWSCocoaLumberjack.h"
 #import "AWSPinpointEndpointProfile.h"
 #import "AWSPinpointContext.h"
 #import "AWSPinpointConfiguration.h"
