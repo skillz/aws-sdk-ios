@@ -57,17 +57,47 @@ NSString *const AWSPinpointCampaignKey = @"campaign";
 - (instancetype) initWithContext:(AWSPinpointContext*) context {
     if (self = [super init]) {
         _context = context;
+        // [Skillz] Keep the notification-registration cache fresh (observer fires on the main thread).
+        static dispatch_once_t skzOnceToken;
+        dispatch_once(&skzOnceToken, ^{
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification
+                                                              object:nil
+                                                               queue:[NSOperationQueue mainQueue]
+                                                          usingBlock:^(NSNotification * _Nonnull note) {
+                [AWSPinpointNotificationManager skz_refreshNotificationCacheOnMain];
+            }];
+        });
     }
     return self;
 }
 
+// [Skillz] Cached remote-notification registration state.
+// -[UIApplication isRegisteredForRemoteNotifications] is a main-thread-only API. The previous
+// implementation dispatch_sync'd to the main thread, which deadlocks whenever the caller holds a
+// lock the main thread is waiting on (AWSPinpointEventRecorder submitAllEvents' recorder lock:
+// bg thread holds lock -> dispatch_sync(main); main thread blocked on the same lock in trackEvent).
+// Off the main thread we now return the cached value and never block. Staleness only affects the
+// analytics endpoint optOut field, and the cache self-corrects on every main-thread read,
+// on app foreground, and on push-token registration.
+static volatile BOOL sSkzCachedNotificationsEnabled = NO;
+static volatile BOOL sSkzNotificationsCacheInitialized = NO;
+
++ (void)skz_refreshNotificationCacheOnMain {
+    sSkzCachedNotificationsEnabled = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
+    sSkzNotificationsCacheInitialized = YES;
+}
+
 + (BOOL)isNotificationEnabled {
-    __block BOOL notificationsEnabled;
-    [self runOnMainThread:^{
-        notificationsEnabled = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
-    }];
-    
-    return notificationsEnabled;
+    if ([NSThread isMainThread]) {
+        [self skz_refreshNotificationCacheOnMain];
+        return sSkzCachedNotificationsEnabled;
+    }
+    if (!sSkzNotificationsCacheInitialized) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [AWSPinpointNotificationManager skz_refreshNotificationCacheOnMain];
+        });
+    }
+    return sSkzCachedNotificationsEnabled;
 }
 
 + (void) runOnMainThread:(void (^)(void))codeBlock {
@@ -107,6 +137,10 @@ NSString *const AWSPinpointCampaignKey = @"campaign";
 }
 
 - (void)interceptDidRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    // [Skillz] Registration succeeded; refresh the cached state (this delegate callback is main-thread).
+    if ([NSThread isMainThread]) {
+        [AWSPinpointNotificationManager skz_refreshNotificationCacheOnMain];
+    }
     //Check if device token has changed
     NSData *currentToken = [self.context.configuration.userDefaults objectForKey:AWSDeviceTokenKey];
     if (![currentToken isEqualToData:deviceToken]) {
