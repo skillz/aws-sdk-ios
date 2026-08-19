@@ -80,11 +80,10 @@ NSString *const AWSPinpointCampaignKey = @"campaign";
 // analytics endpoint optOut field, and the cache self-corrects on every main-thread read,
 // on app foreground, and on push-token registration.
 static volatile BOOL sSkzCachedNotificationsEnabled = NO;
-static volatile BOOL sSkzNotificationsCacheInitialized = NO;
+static volatile BOOL sSkzNotificationsRefreshPending = NO;
 
 + (void)skz_refreshNotificationCacheOnMain {
     sSkzCachedNotificationsEnabled = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
-    sSkzNotificationsCacheInitialized = YES;
 }
 
 + (BOOL)isNotificationEnabled {
@@ -92,9 +91,14 @@ static volatile BOOL sSkzNotificationsCacheInitialized = NO;
         [self skz_refreshNotificationCacheOnMain];
         return sSkzCachedNotificationsEnabled;
     }
-    if (!sSkzNotificationsCacheInitialized) {
+    // Stale-while-revalidate: return the cached value immediately (never block), and
+    // schedule a refresh on the main thread so the cache re-syncs shortly after every
+    // off-main read. The pending flag coalesces bursts of reads into a single queued task.
+    if (!sSkzNotificationsRefreshPending) {
+        sSkzNotificationsRefreshPending = YES;
         dispatch_async(dispatch_get_main_queue(), ^{
             [AWSPinpointNotificationManager skz_refreshNotificationCacheOnMain];
+            sSkzNotificationsRefreshPending = NO;
         });
     }
     return sSkzCachedNotificationsEnabled;
