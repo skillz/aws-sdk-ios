@@ -1,5 +1,20 @@
 # AWS Mobile SDK for iOS CHANGELOG
 
+## Skillz fork — Unreleased
+
+### Bug Fixes
+
+- **Amazon Pinpoint**
+  - Removed the `+[AWSPinpointNotificationManager isNotificationEnabled]` lookup from
+    `-[AWSPinpointEndpointProfile setEndpointOptOut:]`. The lookup performed a
+    `dispatch_sync` onto the main thread while callers could hold the Pinpoint
+    event-recorder lock, producing a deterministic startup deadlock when the main
+    thread was simultaneously blocked on that lock (Skillz portal frozen at 95%).
+    The endpoint `optOut` field is still populated, now from the application-level
+    opt-out configuration only; push-registration state no longer contributes
+    (Pinpoint push campaigns are not used by this fork).
+
+
 ## 2.10.1
 
 ### New Features
