@@ -121,9 +121,16 @@ NSString *DEBUG_CHANNEL_TYPE = @"APNS_SANDBOX";
 }
 
 - (void) setEndpointOptOut:(BOOL) applicationLevelOptOut {
-    BOOL isOptedOutForRemoteNotifications = ![AWSPinpointNotificationManager isNotificationEnabled];
+    // [Skillz] Removed the +[AWSPinpointNotificationManager isNotificationEnabled] lookup.
+    // That call requires the main thread (-[UIApplication isRegisteredForRemoteNotifications])
+    // and dispatch_sync'd to it, deadlocking whenever the caller held the Pinpoint event-recorder
+    // lock while the main thread was blocked on that same lock (portal frozen at 95% on startup).
+    // Skillz never uses Pinpoint push campaigns (no interceptor is ever wired), so the
+    // registration state contributed nothing actionable: optOut now reflects only the
+    // application-level opt-out configuration. The field itself is still populated so the
+    // endpoint payload shape is unchanged.
     @synchronized (self) {
-        self->_optOut = (applicationLevelOptOut || isOptedOutForRemoteNotifications)? @"ALL": @"NONE";
+        self->_optOut = applicationLevelOptOut ? @"ALL" : @"NONE";
     }
 }
 
