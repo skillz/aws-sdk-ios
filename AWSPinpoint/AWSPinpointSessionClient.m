@@ -147,7 +147,19 @@ NSObject *sessionLock;
 
 - (void)applicationDidEnterForeground:(NSNotification*)notification {
     [self.bgTimer invalidate];
+    [self endBackgroundTaskIfNeeded];
     [self resumeSession];
+}
+
+- (void)endBackgroundTaskIfNeeded {
+    UIBackgroundTaskIdentifier task;
+    @synchronized (self) {
+        task = self.bgTask;
+        self.bgTask = UIBackgroundTaskInvalid;
+    }
+    if (task != UIBackgroundTaskInvalid) {
+        [[UIApplication sharedApplication] endBackgroundTask:task];
+    }
 }
 
 - (void)applicationWillTerminate:(NSNotification*)notification {
@@ -304,8 +316,7 @@ NSObject *sessionLock;
             if (block) {
                 block(task);
             }
-            [[UIApplication sharedApplication] endBackgroundTask:self.bgTask];
-            self.bgTask = UIBackgroundTaskInvalid;
+            [self endBackgroundTaskIfNeeded];
             return nil;
         }];
     });
@@ -344,12 +355,15 @@ NSObject *sessionLock;
 - (void)waitForSessionTimeoutWithCompletionBlock:(AWSPinpointTimeoutBlock) block {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if (self.context.configuration.sessionTimeout > 0) {
-            self.bgTask = [[UIApplication sharedApplication] beginBackgroundTaskWithName:AWSPinpointSessionBackgroundTask expirationHandler:^{
+            [self endBackgroundTaskIfNeeded];
+            UIBackgroundTaskIdentifier task = [[UIApplication sharedApplication] beginBackgroundTaskWithName:AWSPinpointSessionBackgroundTask expirationHandler:^{
                 // If background task expires before timeout then stop the session and submit events.
                 [self endCurrentSessionWithBlock:block];
-                [[UIApplication sharedApplication] endBackgroundTask:self.bgTask];
-                self.bgTask = UIBackgroundTaskInvalid;
+                [self endBackgroundTaskIfNeeded];
             }];
+            @synchronized (self) {
+                self.bgTask = task;
+            }
 
             dispatch_async(dispatch_get_main_queue(), ^(){
                 // Wrapping the block in an NSBlockOperation prevents a crash from when it was stored in userInfo
@@ -365,8 +379,7 @@ NSObject *sessionLock;
                 if (block) {
                     block(task);
                 }
-                [[UIApplication sharedApplication] endBackgroundTask:self.bgTask];
-                self.bgTask = UIBackgroundTaskInvalid;
+                [self endBackgroundTaskIfNeeded];
                 return nil;
             }];
         }
